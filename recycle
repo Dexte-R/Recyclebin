@@ -49,13 +49,12 @@ function isAllowedfile() {
 		echo File not allowed to be removed.
 	fi
 }
-
-function moveFile() {
-	echo Move input file to recyclebin
-}
-
-function deleteFile() {
-	echo Delete input file
+# function to check file permissions?
+function recycleFile() {
+	inode=$(ls -i $1 | cut -d" " -f1)
+	outputPath="$recyclePath/$fileName"_"$inode"
+	cp $1 $outputPath # copy file to recyclebin, rename to fileName_inode
+	rm $1 # remove input file
 }
 
 function isLog() {
@@ -83,7 +82,6 @@ isLog
 isFile $*
 getName $*
 isAllowedfile
-#moveFile
-#isLog
+recycleFile $*
 #logProcess
 #errorMessage
