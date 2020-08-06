@@ -24,13 +24,16 @@ function isFile() {
 	if [[ -z $1 ]]
 	then
 		echo Please input file name
+		exit 1
 	elif [[ -d $1 ]]
 	then
 		echo Directory not allowed
+		exit 2
 	else
 		if [[ ! -f $1 ]]
 		then
 			echo File does not exists
+			exit 3
 		fi
 	fi
 
@@ -42,15 +45,17 @@ function isAllowedfile() {
 		if [[ $fileName = "recycle" || $fileName = "restore" ]]
 		then
 			echo File not allowed to be removed.
+			exit 4
 		fi
 	fi
 
 	if [[ $folderPath = $HOME && $fileName = ".restore.info" ]]
 	then
 		echo File not allowed to be removed.
+		exit 4
 	fi
 }
-# function to check file permissions?
+
 function recycleFile() {
 	inode=$(ls -i $1 | cut -d" " -f1)
 	outputName="$fileName"_"$inode"
@@ -71,10 +76,6 @@ function logProcess() {
 	echo "$outputName":"$absolutePath" >> $HOME/.restore.info
 }
 
-function errorMessage() {
-	echo Display error messages
-}
-
 ###############		MAIN	#################
 
 #getOps
@@ -86,4 +87,4 @@ getName $*
 isAllowedfile
 recycleFile $*
 logProcess
-#errorMessage
+exit 0
