@@ -1,0 +1,56 @@
+#!/bin/bash
+
+function getOps() {
+	echo Assign cases to option flags
+}
+
+function isFile() {
+	if [[ $1="" ]]
+	then
+		echo Please input file name
+	elif [[ -d $1 ]]
+	then
+		echo Directory not allowed
+	else
+		continue
+	fi	
+}
+
+function isAllowedfile() {
+	echo Check if user is trying to delete recycle/restore/.restore.info
+}
+
+function isRecyclebin() {
+	echo Check if recyclebin exists, otherwise create recyclebin.
+}
+
+function moveFile() {
+	echo Move input file to recyclebin
+}
+
+function deleteFile() {
+	echo Delete input file
+}
+
+function isLog() {
+	echo Check if log file exists, otherwise create .restore.info
+}
+
+function logProcess() {
+	echo Log original absolution file path and file name in recyclebin to .restore.info
+}
+
+function errorMessage() {
+	echo Display error messages
+}
+
+###############		MAIN	#################
+
+#getOps
+isFile
+#isAllowedfile
+#isRecyclebin
+#moveFile
+#isLog
+#logProcess
+#errorMessage
