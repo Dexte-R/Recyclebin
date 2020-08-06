@@ -2,32 +2,68 @@
 
 function inputFile() {
 	# This function checks if user provided input file as argument
+	if [[ -z $1 ]]
+	then
+		echo Please input file name
+		exit 1
+	fi
 }
 
 function fileIsPresent() {
 	# This function checks if input file exists in $HOME/recyclebin
-
+	recyclePath="$HOME/recyclebin"
+	filePath="$recyclePath/$1"
+	if [[ ! -f $filePath ]]
+	then
+		echo File does not exist in recyclebin
+		exit 3
+	fi
 }
 
 function getOutputPath() {
 	# This function reads .restore.info to get absolute path of original file
-
+	inputFileName=$1
+	logPath="$HOME/.restore.info"
+	inputFileLog=$(grep $inputFileName $logPath)
+	if [[ -z $inputFileLog ]]
+	then
+		echo Unable to retrieve log record of input file from .restore.info
+	else
+		originalPath=$(echo "$inputFileLog" | cut -d":" -f2)
+	fi
 }
 
 function overwriteFile() {
 	# This function checks if input file already exists in target directory.
+	if [[ -f $originalPath ]]
+	then
+		read -p " Do you want to overwrite? y/n " isOverwrite
+	else
+		isOverwrite="y"
+	fi
+	
+	case $isOverwrite in
+		[yY]*)
+			cp $filePath $originalPath
+			rm $filePath
+			updateLog ;;
+		*)
+			exit 0 ;;
+	esac
 }
 
 function updateLog() {
 	# This function removes the line containing the info was the restored file.
+	grep -v $inputFileName $HOME/.restore.info > .tmpfile
+	cp .tmpfile $logPath
 }
 
 ############	MAIN	#############
 
 shift $((OPTIND - 1))
-inputFile
-fileIsPresent
-getOutputPath
+inputFile $*
+fileIsPresent $*
+getOutputPath $*
 overwriteFile
 updateLog
 exit 0
