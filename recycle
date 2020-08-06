@@ -15,8 +15,9 @@ function isRecyclebin() {
 }
 
 function getName() {
-	fileName=$(basename $1)
-	folderPath=$(dirname $1)
+	absolutePath=$(readlink -e $1)
+	fileName=$(basename $absolutePath)
+	folderPath=$(dirname $absolutePath)
 }
 
 function isFile() {
@@ -52,7 +53,8 @@ function isAllowedfile() {
 # function to check file permissions?
 function recycleFile() {
 	inode=$(ls -i $1 | cut -d" " -f1)
-	outputPath="$recyclePath/$fileName"_"$inode"
+	outputName="$fileName"_"$inode"
+	outputPath="$recyclePath/$outputName"
 	cp $1 $outputPath # copy file to recyclebin, rename to fileName_inode
 	rm $1 # remove input file
 }
@@ -66,7 +68,7 @@ function isLog() {
 }
 
 function logProcess() {
-	echo Log original absolution file path and file name in recyclebin to .restore.info
+	echo "$outputName":"$absolutePath" >> $HOME/.restore.info
 }
 
 function errorMessage() {
@@ -83,5 +85,5 @@ isFile $*
 getName $*
 isAllowedfile
 recycleFile $*
-#logProcess
+logProcess
 #errorMessage
