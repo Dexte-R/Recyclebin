@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+then
+	echo "No argument has been passed"
+elif [ $# -eq 1 ]
+then 
+	echo "Only one argument has been passed"
+elif [ $# -eq 2 ]
+then
+	echo "2 arguments passed"
+else
+	echo "More than 2 arguments passed"
+fi
+
+while getopts :as opt
+do
+	case $opt in
+		a) echo "Option a" ;;
+		s) echo "Option s" ;;
+	esac
+done
+
+echo $1 $2 $3
+shift $(($OPTIND - 1))
+echo $1 $2 $3

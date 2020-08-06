@@ -4,24 +4,50 @@ function getOps() {
 	echo Assign cases to option flags
 }
 
+function isRecyclebin() {
+	recyclePath="$HOME/recyclebin"
+	if [[ ! -d $recyclePath ]]
+	then
+		echo Recyclebin not found.
+		mkdir $recyclePath
+		echo Created recyclebin at $recyclePath
+	fi
+}
+
+function getName() {
+	fileName=$(basename $1)
+	folderPath=$(dirname $1)
+}
+
 function isFile() {
-	if [[ $1="" ]]
+	if [[ -z $1 ]]
 	then
 		echo Please input file name
 	elif [[ -d $1 ]]
 	then
 		echo Directory not allowed
 	else
-		continue
-	fi	
+		if [[ ! -f $1 ]]
+		then
+			echo File does not exists
+		fi
+	fi
+
 }
 
 function isAllowedfile() {
-	echo Check if user is trying to delete recycle/restore/.restore.info
-}
+	if [[ $folderPath = "$HOME/project" ]]
+	then
+		if [[ $fileName = "recycle" || $fileName = "restore" ]]
+		then
+			echo File not allowed to be removed.
+		fi
+	fi
 
-function isRecyclebin() {
-	echo Check if recyclebin exists, otherwise create recyclebin.
+	if [[ $folderPath = $HOME && $fileName = ".restore.info" ]]
+	then
+		echo File not allowed to be removed.
+	fi
 }
 
 function moveFile() {
@@ -33,7 +59,11 @@ function deleteFile() {
 }
 
 function isLog() {
-	echo Check if log file exists, otherwise create .restore.info
+	logPath="$HOME/.restore.info"
+	if [[ ! -f $logPath ]]
+	then
+		touch $logPath
+	fi	
 }
 
 function logProcess() {
@@ -47,9 +77,12 @@ function errorMessage() {
 ###############		MAIN	#################
 
 #getOps
-isFile
-#isAllowedfile
-#isRecyclebin
+shift $(($OPTIND - 1))
+isRecyclebin
+isLog
+isFile $*
+getName $*
+isAllowedfile
 #moveFile
 #isLog
 #logProcess
