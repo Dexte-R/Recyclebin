@@ -1,0 +1,33 @@
+#!/bin/bash
+
+function inputFile() {
+	# This function checks if user provided input file as argument
+}
+
+function fileIsPresent() {
+	# This function checks if input file exists in $HOME/recyclebin
+
+}
+
+function getOutputPath() {
+	# This function reads .restore.info to get absolute path of original file
+
+}
+
+function overwriteFile() {
+	# This function checks if input file already exists in target directory.
+}
+
+function updateLog() {
+	# This function removes the line containing the info was the restored file.
+}
+
+############	MAIN	#############
+
+shift $((OPTIND - 1))
+inputFile
+fileIsPresent
+getOutputPath
+overwriteFile
+updateLog
+exit 0

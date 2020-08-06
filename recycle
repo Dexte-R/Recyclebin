@@ -5,6 +5,7 @@ function getOps() {
 }
 
 function isRecyclebin() {
+	# This function checks if recyclebin is found in $HOME/recyclebin; directory created if not found.
 	recyclePath="$HOME/recyclebin"
 	if [[ ! -d $recyclePath ]]
 	then
@@ -15,6 +16,7 @@ function isRecyclebin() {
 }
 
 function getName() {
+	# This function converts relative path to absolute path.
 	absolutePath=$(readlink -e $1)
 	fileName=$(basename $absolutePath)
 	folderPath=$(dirname $absolutePath)
@@ -39,7 +41,8 @@ function isFile() {
 
 }
 
-function isAllowedfile() {
+function fileIsAllowed() {
+	# This function prevents user from removing restore/recycle script and logfile.
 	if [[ $folderPath = "$HOME/project" ]]
 	then
 		if [[ $fileName = "recycle" || $fileName = "restore" ]]
@@ -72,7 +75,7 @@ function isLog() {
 	fi	
 }
 
-function logProcess() {
+function updateLog() {
 	echo "$outputName":"$absolutePath" >> $HOME/.restore.info
 }
 
@@ -84,7 +87,7 @@ isRecyclebin
 isLog
 isFile $*
 getName $*
-isAllowedfile
+fileIsAllowed
 recycleFile $*
-logProcess
+updateLog
 exit 0
