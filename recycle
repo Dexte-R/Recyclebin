@@ -4,11 +4,12 @@ function getOps() {
 	opt_i=false # -i interactive mode
 	opt_v=false # -v verbose mode
 	opt_r=false # -r recursive mode
-	while getopts :iv opt
+	while getopts :ivr opt
 	do
 		case $opt in
 			i)	opt_i=true ;;
 			v)	opt_v=true ;;
+			r)	opt_r=true ;;
 			*)	echo Bad Option - $OPTARG
 				exit 5 ;;
 		esac
@@ -33,17 +34,15 @@ function getName() {
 	folderPath=$(dirname $absolutePath)
 }
 
-function fileExist() {
+function inputIsGiven() {
 	if [[ -z $1 ]]
 	then
 		echo Please input file name
 		exit 1
-	elif [[ -d $1 ]]
-	then
-		echo Directory not allowed
-		exit 2
 	fi
+}
 
+function isFile() {
 	if [[ ! -f $1 ]]
 	then
 		echo $1 does not exists
@@ -58,6 +57,15 @@ function fileExist() {
 	
 	return 0
 
+}
+
+function isDir() {
+	# Checks if input is directory
+	if [[ -d $1 ]]
+	then
+		echo Directory not allowed
+		exit 2
+	fi
 }
 
 function fileIsAllowed() {
@@ -83,6 +91,7 @@ function recycleFile() {
 	inode=$(ls -i $1 | cut -d" " -f1)
 	outputName="$fileName"_"$inode"
 	outputPath="$recyclePath/$outputName"
+
 	if $opt_i
 	then
 		read -p "Recycle file "\'$1\'"? " isRecycle
@@ -107,6 +116,23 @@ function recycleFile() {
 	then
 		echo removed \'$1\'
 	fi
+	updateLog
+	return 0
+}
+
+function recycleDir() {
+	# This function recycles all files in directory if -r flag passed.
+
+	for eachFile in "$1"/*
+	do
+		getName $eachFile
+		recycleFile $eachFile	
+	done
+	
+	if [[ -z $(ls $1) ]]
+	then
+		rmdir $1
+	fi
 }
 
 function isLog() {
@@ -129,19 +155,36 @@ isLog
 shift $(($OPTIND - 1))
 while [[ $# != 0 ]]
 do
-	if ! fileExist $* # if $1 not exists & $2 provided, continue
+	inputIsGiven $*
+
+	if ! $opt_r
 	then
-		shift
-		continue
+		isDir $*		
+		if ! isFile $*
+		then
+			shift
+			continue
+		fi
+		getName $*
+		fileIsAllowed
 	fi
-	getName $*
-	fileIsAllowed
-	if recycleFile $*
+	
+	if [[ -f $* ]]
 	then
+		if recycleFile $*
+		then
+			shift
+			continue
+		fi
+		updateLog
 		shift
-		continue
 	fi
-	updateLog
-	shift
+	
+	if $opt_r
+	then
+		recycleDir $*
+		updateLog
+		shift
+	fi	
 done
 exit 0
