@@ -1,6 +1,22 @@
 #!/bin/bash
 
-function inputFile() {
+function getOps() {
+	opt_i=false # -i interactive mode
+	opt_v=false # -v verbose mode
+	opt_r=false # -r recursive mode
+	while getopts :ivr opt
+	do
+		case $opt in
+			i)	opt_i=true ;;
+			v)	opt_v=true ;;
+			r)	opt_r=true ;;
+			*)	echo Bad Option - $OPTARG
+				exit 5 ;;
+		esac
+	done
+}
+
+function inputIsGiven() {
 	# This function checks if user provided input file as argument
 	if [[ -z $1 ]]
 	then
@@ -33,7 +49,7 @@ function getOutputPath() {
 	fi
 }
 
-function overwriteFile() {
+function restoreFile() {
 	# This function checks if input file already exists in target directory.
 	if [[ -f $originalPath ]]
 	then
@@ -52,6 +68,14 @@ function overwriteFile() {
 	esac
 }
 
+function isDirPresent() {
+	
+}
+
+function restoreDir() {
+	
+}
+
 function updateLog() {
 	# This function removes the line containing the info was the restored file.
 	grep -v $inputFileName $HOME/.restore.info > .tmpfile
@@ -60,9 +84,19 @@ function updateLog() {
 
 ############	MAIN	#############
 
+getOps $*
 shift $((OPTIND - 1))
-inputFile $*
-fileIsPresent $*
-getOutputPath $*
-overwriteFile
+while [[ $# != 0 ]]
+do
+	inputIsGiven $*
+	fileIsPresent $*
+	if $opt_r
+	then
+		restoreDir
+	else
+		getOutputPath $*
+		restoreFile
+	fi
+	shift
+done
 exit 0
