@@ -1,7 +1,18 @@
 #!/bin/bash
 
 function getOps() {
-	echo Assign cases to option flags
+	opt_i=false # -i interactive mode
+	opt_v=false # -v verbose mode
+	opt_r=false # -r recursive mode
+	while getopts :iv opt
+	do
+		case $opt in
+			i)	opt_i=true ;;
+			v)	opt_v=true ;;
+			*)	echo Bad Option - $OPTARG
+				exit 5 ;;
+		esac
+	done
 }
 
 function isRecyclebin() {
@@ -22,7 +33,7 @@ function getName() {
 	folderPath=$(dirname $absolutePath)
 }
 
-function isFile() {
+function fileExist() {
 	if [[ -z $1 ]]
 	then
 		echo Please input file name
@@ -31,13 +42,21 @@ function isFile() {
 	then
 		echo Directory not allowed
 		exit 2
-	else
-		if [[ ! -f $1 ]]
-		then
-			echo File does not exists
-			exit 3
-		fi
 	fi
+
+	if [[ ! -f $1 ]]
+	then
+		echo $1 does not exists
+		
+		if [[ -z $2 ]]
+		then
+			exit 3
+		else
+			return 1
+		fi	
+	fi
+	
+	return 0
 
 }
 
@@ -59,12 +78,35 @@ function fileIsAllowed() {
 	fi
 }
 
+
 function recycleFile() {
 	inode=$(ls -i $1 | cut -d" " -f1)
 	outputName="$fileName"_"$inode"
 	outputPath="$recyclePath/$outputName"
-	cp $1 $outputPath # copy file to recyclebin, rename to fileName_inode
-	rm $1 # remove input file
+	if $opt_i
+	then
+		read -p "Recycle file "\'$1\'"? " isRecycle
+	else
+		isRecycle="y"
+	fi
+	
+	case $isRecycle in
+		[yY]*)
+			cp $1 $outputPath # copy file to recyclebin, rename to fileName_inode
+			rm $1 ;; # remove input file
+		*)
+			if [[ -z $2 ]]
+			then
+				exit 0
+			else
+				return 0 
+			fi ;;
+	esac
+			
+	if $opt_v
+	then
+		echo removed \'$1\'
+	fi
 }
 
 function isLog() {
@@ -81,13 +123,25 @@ function updateLog() {
 
 ###############		MAIN	#################
 
-#getOps
-shift $(($OPTIND - 1))
+getOps $*
 isRecyclebin
 isLog
-isFile $*
-getName $*
-fileIsAllowed
-recycleFile $*
-updateLog
+shift $(($OPTIND - 1))
+while [[ $# != 0 ]]
+do
+	if ! fileExist $* # if $1 not exists & $2 provided, continue
+	then
+		shift
+		continue
+	fi
+	getName $*
+	fileIsAllowed
+	if recycleFile $*
+	then
+		shift
+		continue
+	fi
+	updateLog
+	shift
+done
 exit 0

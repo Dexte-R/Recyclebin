@@ -65,5 +65,4 @@ inputFile $*
 fileIsPresent $*
 getOutputPath $*
 overwriteFile
-updateLog
 exit 0
