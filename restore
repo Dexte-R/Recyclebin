@@ -46,6 +46,8 @@ function getOutputPath() {
 		echo Unable to retrieve log record of input file from .restore.info
 	else
 		originalPath=$(echo "$inputFileLog" | cut -d":" -f2)
+		dirPath=$(dirname $originalPath)
+		fileName=$(basename $originalPath)
 	fi
 }
 
@@ -69,12 +71,13 @@ function restoreFile() {
 }
 
 function isDirPresent() {
-	
+	# Checks if dir/sub-dir of file is present, build recursively otherwise
+	if [[ ! -d $dirPath ]]
+	then
+		mkdir -p $dirPath
+	fi
 }
 
-function restoreDir() {
-	
-}
 
 function updateLog() {
 	# This function removes the line containing the info was the restored file.
@@ -90,11 +93,12 @@ while [[ $# != 0 ]]
 do
 	inputIsGiven $*
 	fileIsPresent $*
+	getOutputPath $*
 	if $opt_r
 	then
-		restoreDir
+		isDirPresent
+		restoreFile
 	else
-		getOutputPath $*
 		restoreFile
 	fi
 	shift

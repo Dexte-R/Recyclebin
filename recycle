@@ -122,6 +122,11 @@ function recycleFile() {
 
 function recycleDir() {
 	# This function recycles all files in directory if -r flag passed.
+	if [[ ! -d $1 ]]
+	then
+		echo $1 does not exist
+		exit 3
+	fi
 
 	for eachFile in "$1"/*
 	do
@@ -176,14 +181,12 @@ do
 			shift
 			continue
 		fi
-		updateLog
 		shift
 	fi
 	
 	if $opt_r
 	then
 		recycleDir $*
-		updateLog
 		shift
 	fi	
 done
