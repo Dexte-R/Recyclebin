@@ -89,9 +89,9 @@ function updateLog() {
 
 getOps $*
 shift $((OPTIND - 1))
+inputIsGiven $*
 while [[ $# != 0 ]]
 do
-	inputIsGiven $*
 	fileIsPresent $*
 	getOutputPath $*
 	if $opt_r

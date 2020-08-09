@@ -21,9 +21,7 @@ function isRecyclebin() {
 	recyclePath="$HOME/recyclebin"
 	if [[ ! -d $recyclePath ]]
 	then
-		echo Recyclebin not found.
 		mkdir $recyclePath
-		echo Created recyclebin at $recyclePath
 	fi
 }
 
@@ -74,7 +72,7 @@ function fileIsAllowed() {
 	then
 		if [[ $fileName = "recycle" || $fileName = "restore" ]]
 		then
-			echo File not allowed to be removed.
+			echo Attempting to delete $fileName - operation aborted
 			exit 4
 		fi
 	fi
@@ -102,22 +100,21 @@ function recycleFile() {
 	case $isRecycle in
 		[yY]*)
 			cp $1 $outputPath # copy file to recyclebin, rename to fileName_inode
-			rm $1 ;; # remove input file
+			rm $1 # remove input file
+			if $opt_v
+			then
+				echo Recycled \'$1\'
+			fi
+			updateLog
+			return 0 ;;
 		*)
-			if [[ -z $2 ]]
+			if [[ -z $2 && ! $opt_r ]]
 			then
 				exit 0
 			else
 				return 0 
 			fi ;;
 	esac
-			
-	if $opt_v
-	then
-		echo removed \'$1\'
-	fi
-	updateLog
-	return 0
 }
 
 function recycleDir() {
@@ -158,10 +155,9 @@ getOps $*
 isRecyclebin
 isLog
 shift $(($OPTIND - 1))
+inputIsGiven $*
 while [[ $# != 0 ]]
 do
-	inputIsGiven $*
-
 	if ! $opt_r
 	then
 		isDir $*		
@@ -174,7 +170,7 @@ do
 		fileIsAllowed
 	fi
 	
-	if [[ -f $* ]]
+	if [[ -f $1 ]]
 	then
 		if recycleFile $*
 		then
